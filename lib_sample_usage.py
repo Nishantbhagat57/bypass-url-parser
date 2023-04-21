@@ -27,8 +27,13 @@ bypass_results = exporter.run(urls=target_urls, silent_mode=True)
 # Print results like tool output
 for url, grouped_items in bypass_results.items():
     print(f"\nBypass results for '{url.geturl()}' url:")
-    library_output = Bypasser.get_results_from_grouped_items(url, grouped_items, header_line=True, with_filename=False,
-                                                             filter_sc=filter_status_codes)
+    library_output = Bypasser.get_results_from_grouped_items(
+        url,
+        grouped_items,
+        header_line=True,
+        with_filename=False,
+        filter_sc=filter_status_codes,
+    )
     print(library_output)
 
 if not exporter.verbose and exporter.save_level != Bypasser.SaveLevel.NONE:
