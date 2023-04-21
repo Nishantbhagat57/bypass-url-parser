@@ -15,7 +15,7 @@ Program options:
     -m, --mode <mode>         Bypass modes. See 'Bypasser.BYPASS_MODES' in code [Default: all]
     -o, --outdir <outdir>     Output directory for results
     -x, --proxy <proxy_url>   Set a proxy in the format http://proxy_ip:port.
-    -S, --save-level <level>  Save results level. From 0 (DISABLE) to 3 (FULL) [Default: 1]
+    -S, --save-level <level>  Save results level. From 0 (DISABLE) to 3 (FULL) [Default: 2]
     -s, --spoofip <ip>        IP(s) to inject in ip-specific headers
     -p, --spoofport <port>    Port(s) to inject in port-specific headers
     -r, --retry <num>         Retry attempts of failed requests. Set 0 to disable all retry tentatives [Default: 3]
@@ -273,6 +273,12 @@ class Bypasser:
         self.current_bypass_modes = config_dict.get("--mode")
         self.headers = config_dict.get("--header", [])
         self.output_dir = config_dict.get("--outdir")
+
+        if Tools.is_exist_directory(self.output_dir):
+            error_msg = f"The output directory already exists: {self.output_dir}"
+            ext_logger.error(error_msg)
+            raise ValueError(error_msg)
+
         self.save_level = config_dict.get("--save-level")
         self.spoof_ip_replace = config_dict.get("--spoofip-replace")  # If False spoof_ips append to existing list
         self.spoof_ips = config_dict.get("--spoofip")
@@ -2249,7 +2255,7 @@ class Tools:
         if stdin_support and argument == "-":
             if ext_logger and debug:
                 ext_logger.debug(f"Read '{arg_name}' argument as a list from stdin")
-            return sys.stdin.read().splitlines()
+            return sys.stdin.read().strip().splitlines()
         # Arg value is already a list, useful for library mode. Just return
         if isinstance(argument, list):
             if ext_logger and debug:
