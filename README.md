@@ -96,6 +96,8 @@ virtualenv -p python3 .py3
 source .py3/bin/activate
 pip install -r requirements.txt
 ./bypass_url_parser.py -u http://thinkloveshare.com/juicy_403_endpoint/
+cat /tmp/tmpRANDOM-bypass-url-parser/triaged-bypass.json  | jq -r '.[].request_curl_cmd'
+cat /tmp/tmpRANDOM-bypass-url-parser/triaged-bypass.json  | jq -r '.[].response_data'
 ```
 
 ### DOCKER

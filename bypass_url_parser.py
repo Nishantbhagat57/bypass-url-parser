@@ -18,7 +18,7 @@ Program options:
     -S, --save-level <level>  Save results level. From 0 (DISABLE) to 3 (FULL) [Default: 2]
     -s, --spoofip <ip>        IP(s) to inject in ip-specific headers
     -p, --spoofport <port>    Port(s) to inject in port-specific headers
-    -r, --retry <num>         Retry attempts of failed requests. Set 0 to disable all retry tentatives [Default: 3]
+    -r, --retry <num>         Retry attempts of failed requests. Set 0 to disable all retry tentatives [Default: 1]
     -t, --threads <threads>   Scan with N parallel threads [Default: 1]
     -T, --timeout <timeout>   Request times out after N seconds [Default: 5]
 
@@ -66,7 +66,7 @@ from urllib.parse import ParseResult, urlparse
 import coloredlogs
 from docopt import docopt
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 logger = logging.getLogger("bup")
 
 
@@ -107,6 +107,7 @@ class Bypasser:
     DEFAULT_FILE_ENCODING = "UTF-8"
     DEFAULT_HTTP_VERSION = "0"  # Disabled by default. Lets curl to manage its own version of HTTP by default
     DEFAULT_LOG_FILENAME = "triaged-bypass.log"
+    DEFAULT_JSON_FILENAME = "triaged-bypass.json"
     DEFAULT_OUTPUT_DIR = f"{tempfile.TemporaryDirectory().name}-bypass-url-parser"
     DEFAULT_REQUEST_TLS = False  # Use HTTP protocol by default for requests load with the --request option
     DEFAULT_REQUEST_METHOD = "GET"
@@ -959,11 +960,28 @@ class Bypasser:
             # Logfile - Starting at SaveLevel.MINIMAL
             if self.save_level >= self.SaveLevel.MINIMAL:
                 log_file = f"{outdir}{Tools.SEPARATOR}{Bypasser.DEFAULT_LOG_FILENAME}"
+                json_file = f"{outdir}{Tools.SEPARATOR}{Bypasser.DEFAULT_JSON_FILENAME}"
+
                 with open(log_file, mode="wt", encoding=self.encoding) as file:
                     file.write(f"Bypass results for '{url_obj.geturl()}' url:\n")
                     file.write(f"{self.clean_output}\n")
                     if self.save_level >= self.SaveLevel.PERTINENT and inspect_cmd:
                         file.write(f"{inspect_cmd}")
+                with open(json_file, mode="wt", encoding=self.encoding) as file:
+                    logger.info(f"Json results for '{url_obj.geturl()}' in {json_file}")
+                    items_to_dump = [
+                        {
+                            "request_curl_cmd": shlex_join(item.request_curl_cmd),
+                            "request_curl_payload": item.request_curl_payload,
+                            "response_headers": item.response_headers,
+                            "response_lines_count": item.response_lines_count,
+                            "response_data": item.response_data,
+                            "response_content_length": item.response_content_length,
+                        }
+                        for item in self.curl_items
+                    ]
+                    file.write(json.dumps(items_to_dump))
+                    # import ipdb;ipdb.set_trace()
                 if self.verbose:
                     self.logger.info(f"Program log file which contains the results saved in {log_file}")
         else:

@@ -7,3 +7,4 @@ ipython>=8.10.0
 isort==5.10.1
 pre-commit==3.2.2
 setuptools>=65.5.1
+rich==13.3.4
